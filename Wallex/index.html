@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1712">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wallex">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Wallex</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="64x64" href="icon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="style.css?v=7">
+<script>
+/* Apply saved theme before paint to avoid a flash */
+try{
+  var s=JSON.parse(localStorage.getItem('wallex:v1'));
+  var t=(s&&s.settings&&s.settings.theme)||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+}catch(e){}
+</script>
+</head>
+<body>
+
+<!-- Icon sprite (Lucide-style, stroke icons) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 21h18"/><rect x="5" y="11" width="3.5" height="8" rx="1"/><rect x="10.25" y="5" width="3.5" height="14" rx="1"/><rect x="15.5" y="9" width="3.5" height="10" rx="1"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 9V6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15H9"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M12 4v13M6 11l6 6 6-6"/><path d="M5 20.5h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3.5" y="11" width="17" height="10" rx="2.5"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></symbol>
+  <symbol id="i-more-v" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></symbol>
+
+  <!-- categories -->
+  <symbol id="i-utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></symbol>
+  <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></symbol>
+  <symbol id="i-fuel" viewBox="0 0 24 24"><path d="M3 22h12"/><path d="M4 9h10"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><path d="M8 6v6M15 6v6M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></symbol>
+  <symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.3 5H6.7a4 4 0 0 0-4 3.6C2.6 9.4 2 14.5 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.4-1.4a2 2 0 0 1 1.4-.6h4.4a2 2 0 0 1 1.4.6L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.5-.6-6.6-.7-7.4A4 4 0 0 0 17.3 5Z"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.3 9 5.2"/><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></symbol>
+
+  <!-- wallets -->
+  <symbol id="i-banknote" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.2"/><path d="M6 12h.01M18 12h.01"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+  <symbol id="i-landmark" viewBox="0 0 24 24"><path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7"/><path d="m12 2 8 5H4l8-5Z"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/></symbol>
+</svg>
+
+<div class="app">
+
+  <!-- Sidebar rail (tablet / PC) -->
+  <aside class="sidebar">
+    <div class="brand"><img class="logo-img" src="icon-192.png" alt="" width="36" height="36"><span class="brand-name">Wallex</span></div>
+    <nav class="nav">
+      <button class="nav-btn active" data-nav="home"><span class="ni"><svg class="ic"><use href="#i-home"/></svg></span><span class="nl">Home</span></button>
+      <button class="nav-btn" data-nav="categories"><span class="ni"><svg class="ic"><use href="#i-tag"/></svg></span><span class="nl">Categories</span></button>
+      <button class="nav-btn" data-nav="calendar"><span class="ni"><svg class="ic"><use href="#i-calendar"/></svg></span><span class="nl">Calendar</span></button>
+      <button class="nav-btn" data-nav="analytics"><span class="ni"><svg class="ic"><use href="#i-chart"/></svg></span><span class="nl">Analytics</span></button>
+      <button class="nav-btn" data-nav="settings"><span class="ni"><svg class="ic"><use href="#i-settings"/></svg></span><span class="nl">Settings</span></button>
+    </nav>
+    <button class="add-side" data-add aria-label="Add transaction"><svg class="ic"><use href="#i-plus"/></svg><span class="nl">New transaction</span></button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <img class="logo-img" src="icon-192.png" alt="Wallex" width="32" height="32">
+        <h1 id="viewTitle">Home</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" data-nav="settings" aria-label="Settings" title="Settings"><svg class="ic"><use href="#i-settings"/></svg></button>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <section id="view-home" class="view">
+      <div class="home-grid">
+        <div class="col">
+          <!-- Sero Hero Card (Image 1) -->
+          <div class="card hero">
+            <div class="hero-top-row">
+              <div class="sero-chip">
+                <img src="icon-192.png" class="chip-logo-img" alt="" width="18" height="18">
+                <span class="chip-text">Wallex <b>PREMIUM</b></span>
+                <span class="chip-dollar">$</span>
+              </div>
+            </div>
+
+            <div class="hero-user-row">
+              <div class="hero-user">Good morning, <span id="userGreeting">Sam</span></div>
+              <button class="hero-edit-btn" id="editUserNameBtn" aria-label="Edit name" title="Edit name"><svg class="ic"><use href="#i-pencil"/></svg></button>
+            </div>
+
+            <div class="hero-bal-row">
+              <span class="lbl">Balance</span>
+              <button class="eye-btn" id="toggleHideBal" aria-label="Toggle balance visibility" title="Hide/Show balance"><svg class="ic" id="eyeIcon"><use href="#i-eye"/></svg></button>
+            </div>
+
+            <div class="big hero-net" id="net">₱0</div>
+            <button class="hero-sublink" id="heroTapAccounts">&gt; tap for accounts</button>
+
+            <div class="sero-hero-cols">
+              <div>
+                <div class="lbl">INCOME</div>
+                <div class="hc" id="hcIncome">₱0</div>
+              </div>
+              <div>
+                <div class="lbl"><svg class="ic mini-lock"><use href="#i-lock"/></svg> LOCKED</div>
+                <div class="hc" id="hcLocked">₱0</div>
+              </div>
+            </div>
+
+            <!-- Legacy fields for backward compatibility -->
+            <span id="liquid" hidden></span>
+            <span id="hcDrag" hidden></span>
+            <span id="hcDragPct" hidden></span>
+          </div>
+
+          <!-- Sero SPENDING Section (Image 1 Centerpiece) -->
+          <div class="card sero-spending-card" id="spendingCard">
+            <div class="spending-header">
+              <div class="spending-header-left">
+                <div class="section-title">SPENDING</div>
+                <div class="spending-sub"><svg class="ic mini-spin-ic"><use href="#i-swap"/></svg> spin wheel manually to inspect</div>
+              </div>
+              <div class="spending-pills" id="spendingPills">
+                <button class="sp-pill" data-sp="day">Day</button>
+                <button class="sp-pill" data-sp="week">Week</button>
+                <button class="sp-pill active" data-sp="month">Month</button>
+                <button class="sp-pill" data-sp="custom">Custom</button>
+              </div>
+            </div>
+
+            <div class="spending-amount-wrap">
+              <div class="spending-big" id="spendingBig">₱0</div>
+              <button class="link-btn find-similar-btn" id="spendingManageCatBtn">
+                <svg class="ic"><use href="#i-tag"/></svg><span>Manage categories &gt;</span>
+              </button>
+            </div>
+
+            <div class="spending-meta-row">
+              <span class="sp-count" id="spendingCount">0 categories</span>
+              <div class="spending-month-nav">
+                <button class="sp-arrow-btn" id="spPrevMonth" aria-label="Previous month"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+                <span id="spMonthLabel">Month Year</span>
+                <button class="sp-arrow-btn" id="spNextMonth" aria-label="Next month"><svg class="ic"><use href="#i-chev-r"/></svg></button>
+              </div>
+              <button class="link-btn cal-view-btn" id="spCalViewBtn">Calendar view &gt;</button>
+            </div>
+
+            <!-- The Sero Segmented Ring SVG Donut -->
+            <div class="sero-chart-container">
+              <div class="sero-chart-stage" id="seroChartStage">
+                <div class="sero-wheel-pointer" title="Focus pointer"></div>
+                <svg class="sero-svg-ring" id="seroSvgRing" viewBox="0 0 340 340">
+                  <g id="seroRotator" transform="rotate(0 170 170)"></g>
+                </svg>
+                <div class="sero-center-card" id="seroCenterCard">
+                  <div class="sc-icon" id="scIcon"><svg class="ic"><use href="#i-home"/></svg></div>
+                  <div class="sc-name" id="scName">Housing</div>
+                  <div class="sc-pct" id="scPct">0%</div>
+                  <div class="sc-amt" id="scAmt">₱0</div>
+                  <button class="sc-add-btn" id="scAddBtn">+ add new</button>
+                  <button class="sc-see-btn" id="scSeeBtn">see transactions &gt;</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Savings Goals (Image 2) -->
+          <div class="sec-head">
+            <div class="section-title">Savings Goals</div>
+            <div class="sec-actions">
+              <button class="link-btn" data-goal-new>+ Add Goal</button>
+              <button class="link-btn" id="goalsAll" data-goals-all>See all &rarr;</button>
+            </div>
+          </div>
+          <div class="goals" id="goals"></div>
+
+          <!-- Budgets Section (Image 2) -->
+          <div class="sec-head">
+            <div class="section-title">Budgets</div>
+            <div class="sec-actions">
+              <button class="link-btn" id="budgetManageBtn">Manage &rarr;</button>
+            </div>
+          </div>
+          <div class="budgets-box" id="budgetsBox"></div>
+
+          <!-- Spendable Wallets & Investments (Image 2) -->
+          <div class="sec-head" id="walletsSec"><div class="section-title">Spendable Wallets</div></div>
+          <div class="wallets" id="wallets"></div>
+
+          <div class="sec-head"><div class="section-title">Investments</div></div>
+          <div class="card" id="dragon"></div>
+
+          <!-- Safe-to-Spend -->
+          <div class="card" id="safe"></div>
+        </div>
+
+        <div class="col">
+          <!-- Recent Activity (Image 2) -->
+          <div class="card">
+            <div class="card-head"><h2>Recent Activity</h2></div>
+            <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Search transactions..." autocomplete="off" aria-label="Search transactions"></label>
+            <div class="pills" id="filters">
+              <button data-flt="all" class="active">All</button>
+              <button data-flt="income">Income</button>
+              <button data-flt="expenses">Expenses</button>
+              <button data-flt="savings">Savings</button>
+              <button data-flt="transfers">Transfers</button>
+            </div>
+            <div id="recent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES (Category Manager - Image 3) -->
+    <section id="view-categories" class="view" hidden>
+      <div class="cat-mgr-container">
+        <div class="cat-mgr-card">
+          <div class="cat-mgr-head">
+            <button class="icon-btn-back" id="catMgrBackBtn" aria-label="Back to home"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+            <h2>Category Manager</h2>
+            <div style="width:36px"></div>
+          </div>
+
+          <div class="cat-mgr-tab-row">
+            <span class="cat-mgr-pill">Daily</span>
+            <p class="cat-mgr-subtitle">Customize the Category of your Income and Expenses.</p>
+          </div>
+
+          <!-- Expense section -->
+          <div class="cat-mgr-section">
+            <div class="cat-mgr-sec-header">
+              <h3>Expense</h3>
+              <button class="cat-mgr-add-circle" id="addExpenseCatBtn" title="Add Expense Category" aria-label="Add Expense Category">
+                <svg class="ic"><use href="#i-plus"/></svg>
+              </button>
+            </div>
+            <div class="cat-mgr-items" id="expenseCatItems"></div>
+          </div>
+
+          <!-- Income section -->
+          <div class="cat-mgr-section">
+            <div class="cat-mgr-sec-header">
+              <h3>Income</h3>
+              <button class="cat-mgr-add-circle" id="addIncomeCatBtn" title="Add Income Category" aria-label="Add Income Category">
+                <svg class="ic"><use href="#i-plus"/></svg>
+              </button>
+            </div>
+            <div class="cat-mgr-items" id="incomeCatItems"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section id="view-calendar" class="view" hidden>
+      <div class="cal-layout">
+        <div class="card cal-card">
+          <div class="cal-head">
+            <button class="icon-btn" data-cal="prev" aria-label="Previous month"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+            <div class="cal-title"><h2 id="calTitle"></h2><button class="link-btn" data-cal="today">Jump to today</button></div>
+            <button class="icon-btn" data-cal="next" aria-label="Next month"><svg class="ic"><use href="#i-chev-r"/></svg></button>
+          </div>
+          <div class="cal-stats" id="calStats"></div>
+          <div class="cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-legend">
+            <span><i class="cal-dot lv1"></i>Light</span>
+            <span><i class="cal-dot lv2"></i>Moderate</span>
+            <span><i class="cal-dot lv3"></i>Heavy</span>
+            <span class="ck-leg"><svg class="ic"><use href="#i-check"/></svg>No-spend day</span>
+          </div>
+        </div>
+        <button class="day-backdrop" id="dayBackdrop" data-closeday aria-label="Close day details" hidden></button>
+        <aside class="card day-detail" id="dayDetail" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section id="view-analytics" class="view" hidden>
+      <div class="seg" id="periodSeg" role="tablist">
+        <button data-period="week">Week</button>
+        <button data-period="month">Month</button>
+        <button data-period="all">All</button>
+      </div>
+      <div class="an-stats" id="anStats"></div>
+      <div class="an-grid" id="anGrid">
+        <div class="card">
+          <div class="card-head"><h2>Spending by category</h2></div>
+          <div class="chart-box donut"><canvas id="donutChart" aria-label="Category donut chart" role="img"></canvas><div class="donut-center" id="donutCenter"></div></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 id="barTitle">Daily spending</h2></div>
+          <div class="chart-box bars"><canvas id="barChart" aria-label="Daily spending bar chart" role="img"></canvas></div>
+        </div>
+      </div>
+      <div class="card empty" id="anEmpty" hidden>No expenses in this period yet.<br>Log one with <b>+</b> and your charts will appear here.</div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view" hidden>
+      <div class="card" id="settingsBox"></div>
+    </section>
+  </main>
+
+  <!-- Bottom nav (mobile dock) -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-nav="home"><span class="ni"><svg class="ic"><use href="#i-home"/></svg></span><span class="nl">Home</span></button>
+    <button class="nav-btn" data-nav="categories"><span class="ni"><svg class="ic"><use href="#i-tag"/></svg></span><span class="nl">Categories</span></button>
+    <span class="nav-gap" aria-hidden="true"></span>
+    <button class="nav-btn" data-nav="calendar"><span class="ni"><svg class="ic"><use href="#i-calendar"/></svg></span><span class="nl">Calendar</span></button>
+    <button class="nav-btn" data-nav="analytics"><span class="ni"><svg class="ic"><use href="#i-chart"/></svg></span><span class="nl">Analytics</span></button>
+  </nav>
+  <button class="fab" data-add aria-label="Add transaction"><svg class="ic"><use href="#i-plus"/></svg></button>
+</div>
+
+<!-- QUICK-ADD MODAL -->
+<div id="overlay" class="overlay" hidden>
+  <div class="sheet" id="sheet" data-type="expense" role="dialog" aria-modal="true" aria-label="Add transaction">
+    <div class="sheet-head">
+      <div class="tabs" id="typeTabs">
+        <button data-type="expense" class="active"><svg class="ic"><use href="#i-minus"/></svg><span>Expense</span></button>
+        <button data-type="income"><svg class="ic"><use href="#i-plus"/></svg><span>Income</span></button>
+        <button data-type="transfer"><svg class="ic"><use href="#i-swap"/></svg><span>Transfer</span></button>
+        <button data-type="invest"><svg class="ic"><use href="#i-trend"/></svg><span>Invest</span></button>
+      </div>
+      <button class="icon-btn" id="closeModal" aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button>
+    </div>
+
+    <div class="sheet-body">
+      <div class="combos" id="combos" data-show="expense" hidden></div>
+
+      <div class="amount-row">
+        <span class="cur">₱</span>
+        <input id="amt" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
+      </div>
+
+      <!-- Categories grid (for Expense and Income) -->
+      <div class="cat-grid" id="cats" data-show="expense income"></div>
+
+      <input id="other" class="input" data-show="expense" type="text" maxlength="40" placeholder="What was it? (e.g. Clothes, Haircut)" hidden>
+
+      <div class="row2">
+        <label class="field" data-show="expense income transfer invest">
+          <span class="lbl" id="walLabel">Paid from</span>
+          <select id="walSel" class="input"></select>
+        </label>
+        <label class="field" data-show="transfer" hidden>
+          <span class="lbl">To</span>
+          <select id="toSel" class="input"></select>
+        </label>
+        <div class="field" data-show="invest" hidden>
+          <span class="lbl">To</span>
+          <div class="input static">DragonFi</div>
+        </div>
+      </div>
+
+      <div class="field fee-field" data-show="transfer" hidden>
+        <span class="lbl">Transfer fee (optional)</span>
+        <div class="inp"><span>₱</span><input id="fee" type="text" inputmode="decimal" placeholder="0" autocomplete="off" aria-label="Transfer fee"></div>
+        <div class="fee-chips" id="feeChips">
+          <button type="button" data-fee="0">₱0</button>
+          <button type="button" data-fee="8">₱8</button>
+          <button type="button" data-fee="10">₱10</button>
+          <button type="button" data-fee="15">₱15</button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <label class="field">
+          <span class="lbl">Date</span>
+          <input id="date" type="date" class="input">
+        </label>
+        <label class="field">
+          <span class="lbl" id="noteLabel">Note (optional)</span>
+          <input id="note" type="text" class="input" maxlength="60" placeholder="">
+        </label>
+      </div>
+    </div>
+
+    <button id="saveBtn" class="save-btn">Save expense</button>
+  </div>
+</div>
+
+<!-- CATEGORY EDITOR MODAL -->
+<div id="catModalOverlay" class="overlay center" hidden>
+  <div class="dialog cat-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
+    <div class="sheet-head">
+      <h3 id="catModalTitle">Edit Category</h3>
+      <button class="icon-btn" id="closeCatModal" aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="dialog-body">
+      <label class="field">
+        <span class="lbl">Category Name</span>
+        <input id="catNameInp" class="input" type="text" maxlength="32" placeholder="e.g. Food &amp; Drink" autocomplete="off">
+      </label>
+
+      <div class="field" style="margin-top:12px">
+        <span class="lbl">Type</span>
+        <div class="seg two" id="catTypeSeg">
+          <button type="button" data-ctype="expense" class="active">Expense</button>
+          <button type="button" data-ctype="income">Income</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:12px">
+        <span class="lbl">Icon</span>
+        <div class="icon-picker" id="catIconPicker"></div>
+      </div>
+
+      <div class="field" style="margin-top:12px">
+        <span class="lbl">Color</span>
+        <div class="color-picker" id="catColorPicker"></div>
+      </div>
+
+      <label class="field" id="catBudgetField" style="margin-top:12px">
+        <span class="lbl">Monthly Budget (optional)</span>
+        <div class="inp"><span>₱</span><input id="catBudgetInp" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+      </label>
+    </div>
+    <div class="cat-modal-actions">
+      <button type="button" class="btn danger" id="deleteCatBtn" hidden><svg class="ic"><use href="#i-trash"/></svg> Delete</button>
+      <button type="button" class="btn" id="cancelCatModal">Cancel</button>
+      <button type="button" class="btn primary" id="saveCatBtn">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY KEBAB MENU -->
+<div id="catMenuOverlay" class="overlay center" hidden>
+  <div class="dialog menu" role="dialog" aria-modal="true" aria-label="Category options">
+    <div class="menu-head" id="catMenuHead"></div>
+    <div id="catMenuBtns">
+      <button class="menu-btn" data-cact="edit"><svg class="ic"><use href="#i-pencil"/></svg>Edit Category</button>
+      <button class="menu-btn" data-cact="budget"><svg class="ic"><use href="#i-target"/></svg>Set Monthly Budget</button>
+      <button class="menu-btn danger" data-cact="delete"><svg class="ic"><use href="#i-trash"/></svg>Delete Category</button>
+      <button class="menu-btn" data-cact="cancel"><svg class="ic"><use href="#i-close"/></svg>Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVINGS GOAL SHEET -->
+<div id="gOverlay" class="overlay" hidden>
+  <div class="sheet" id="gSheet" data-type="invest" role="dialog" aria-modal="true" aria-label="Savings goal"></div>
+</div>
+
+<!-- TRANSACTION OPTIONS -->
+<div id="aOverlay" class="overlay center" hidden>
+  <div class="dialog menu" role="dialog" aria-modal="true" aria-label="Transaction options">
+    <div class="menu-head" id="aHead"></div>
+    <div id="aBtns"></div>
+  </div>
+</div>
+
+<!-- SMALL PROMPT / CONFIRM -->
+<div id="pOverlay" class="overlay center" hidden>
+  <div class="dialog" role="dialog" aria-modal="true">
+    <h3 id="pTitle"></h3>
+    <div id="pFields"></div>
+    <div class="dialog-actions">
+      <button class="btn" id="pCancel">Cancel</button>
+      <button class="btn primary" id="pSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="chart.umd.min.js"></script>
+<script src="app.js?v=7"></script>
+</body>
+</html>
