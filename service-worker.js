@@ -1,7 +1,7 @@
 /* Wallex service worker: app shell works fully offline.
    Strategy: serve from cache instantly, refresh the cache in the background,
    so changes to your files show up on the next launch. */
-const CACHE = 'wallex-shell-v8';
+const CACHE = 'wallex-shell-v9';
 const ASSETS = [
   './',
   './index.html',
