@@ -1,7 +1,7 @@
 /* Wallex service worker: app shell works fully offline.
    Strategy: serve from cache instantly, refresh the cache in the background,
    so changes to your files show up on the next launch. */
-const CACHE = 'wallex-shell-v9';
+const CACHE = 'wallex-shell-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,9 @@ const ASSETS = [
   './icon-180.png',
   './icon-192.png',
   './icon-512.png',
+  './icon-1024.png',
+  './icon-maskable-512.png',
+  './icon-maskable-1024.png',
   './logo-dragonfi.png',
   './logo-gcash.png',
   './logo-gotyme.png',
