@@ -176,13 +176,6 @@ function load() {
         goals: Array.isArray(d.goals) ? d.goals : [],
         txs: Array.isArray(d.txs) ? d.txs : [],
       };
-      // Ensure default categories exist if missing
-      DEFAULT_EXPENSE_CATS.forEach(dc => {
-        if (!res.categories.expense.some(c => c.id === dc.id)) res.categories.expense.push(dc);
-      });
-      DEFAULT_INCOME_CATS.forEach(dc => {
-        if (!res.categories.income.some(c => c.id === dc.id)) res.categories.income.push(dc);
-      });
       return res;
     }
   } catch (e) { console.warn('Wallex: could not read saved data', e); }
@@ -221,12 +214,6 @@ const netWorth = () => r2(liquid() + locked() + S.dragon.value);
 function monthIncome() {
   const m = today().slice(0, 7);
   return r2(S.txs.filter(t => t.type === 'income' && t.date.startsWith(m)).reduce((s, t) => s + t.amount, 0));
-}
-function monthRewards() {
-  // Cashback / rewards / small incentives: transactions tagged allowance or specific note, or 45 sample
-  const m = today().slice(0, 7);
-  const inc = S.txs.filter(t => t.type === 'income' && (t.cat === 'allowance' || /reward|cashback/i.test(t.note || '')) && t.date.startsWith(m));
-  return r2(inc.reduce((s, t) => s + t.amount, 0));
 }
 
 function cycle() {
@@ -277,8 +264,6 @@ function renderHero() {
   $('#userGreeting').textContent = S.settings.userName || 'Sam';
   $('#net').textContent = fmt(netWorth());
   $('#hcIncome').textContent = fmt(monthIncome());
-  const rew = monthRewards();
-  $('#hcRewards').textContent = fmt(rew > 0 ? rew : 45.00);
   $('#hcLocked').textContent = fmt(locked() + S.dragon.value);
 
   // Eye icon state
@@ -299,6 +284,24 @@ let spinVelocity = 0;
 let isDraggingWheel = false;
 let animFrameId = null;
 let activeSlicesData = [];
+let lastWheelInput = 0;          // last time the user touched the wheel
+const WHEEL_IDLE_DEG_PER_SEC = 6; // slow endless drift (~1 turn per minute)
+const WHEEL_IDLE_RESUME_MS = 2000;
+let wheelIdleLast = 0;
+function wheelIdleLoop(now) {
+  const dt = Math.min(64, now - (wheelIdleLast || now));
+  wheelIdleLast = now;
+  const stage = document.getElementById('seroChartStage');
+  const rot = document.getElementById('seroRotator');
+  if (stage && rot && stage.offsetParent !== null && activeSlicesData.length > 1 &&
+      !isDraggingWheel && now - lastWheelInput > WHEEL_IDLE_RESUME_MS) {
+    ringRotation = (ringRotation + WHEEL_IDLE_DEG_PER_SEC * dt / 1000) % 360;
+    rot.setAttribute('transform', `rotate(${ringRotation.toFixed(2)} 170 170)`);
+    updateWheelActiveSlice();
+  }
+  requestAnimationFrame(wheelIdleLoop);
+}
+requestAnimationFrame(wheelIdleLoop);
 
 function getSpendingDateRange() {
   const now = new Date();
@@ -359,7 +362,7 @@ function updateWheelActiveSlice() {
     $$('.sero-arc-path').forEach(p => {
       const isSel = p.dataset.scat === activeSpendingCatId;
       p.classList.toggle('active', isSel);
-      p.setAttribute('stroke-width', isSel ? '34' : '28');
+      p.setAttribute('stroke-width', isSel ? '42' : '34');
     });
   }
 }
@@ -369,6 +372,7 @@ function spinToCategory(catId) {
   if (!item) return;
 
   cancelAnimationFrame(animFrameId);
+  lastWheelInput = performance.now();
   let target = -item.midA;
   let diff = (target - ringRotation) % 360;
   if (diff > 180) diff -= 360;
@@ -381,6 +385,7 @@ function spinToCategory(catId) {
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
   function step(now) {
+    lastWheelInput = performance.now();
     let elapsed = now - startTime;
     let progress = Math.min(1, elapsed / duration);
     ringRotation = startRot + diff * easeOutCubic(progress);
@@ -440,6 +445,7 @@ function setupWheelInteraction() {
     if (e.button != null && e.button !== 0) return;
 
     cancelAnimationFrame(animFrameId);
+    lastWheelInput = performance.now();
     isDraggingWheel = true;
     totalMoved = 0;
     lastAngle = getPointerAngle(e);
@@ -451,6 +457,7 @@ function setupWheelInteraction() {
 
   stage.addEventListener('pointermove', e => {
     if (!isDraggingWheel) return;
+    lastWheelInput = performance.now();
     const nowAngle = getPointerAngle(e);
     let delta = nowAngle - lastAngle;
     if (delta > 180) delta -= 360;
@@ -472,6 +479,7 @@ function setupWheelInteraction() {
   const onPointerUp = e => {
     if (!isDraggingWheel) return;
     isDraggingWheel = false;
+    lastWheelInput = performance.now();
     stage.classList.remove('grabbing');
     try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
 
@@ -492,6 +500,7 @@ function setupWheelInteraction() {
           snapToNearest();
           return;
         }
+        lastWheelInput = performance.now();
         ringRotation = (ringRotation + spinVelocity) % 360;
         setRotationAttr(ringRotation);
         updateWheelActiveSlice();
@@ -510,6 +519,7 @@ function setupWheelInteraction() {
   // Mouse wheel / trackpad scroll to spin
   stage.addEventListener('wheel', e => {
     e.preventDefault();
+    lastWheelInput = performance.now();
     cancelAnimationFrame(animFrameId);
     const delta = (e.deltaY > 0 ? 8 : -8);
     ringRotation = (ringRotation + delta) % 360;
@@ -541,21 +551,21 @@ function renderSpendingSection() {
   $('#spendingCount').textContent = `${activeCats.length} categor${activeCats.length === 1 ? 'y' : 'ies'}`;
 
   const svg = $('#seroSvgRing');
-  const cx = 170, cy = 170, R = 105, W = 28;
+  const cx = 170, cy = 170, R = 126, W = 34;
 
   if (!activeCats.length || total === 0) {
     activeSlicesData = [];
     let emptyArcs = '';
     const nSeg = 8;
     const segSpan = 360 / nSeg;
-    const gap = 14;
+    const gap = 3;
     for (let i = 0; i < nSeg; i++) {
       const a1 = i * segSpan + gap / 2;
       const a2 = (i + 1) * segSpan - gap / 2;
       const r1 = (a1 * Math.PI) / 180, r2 = (a2 * Math.PI) / 180;
       const x1 = cx + R * Math.cos(r1), y1 = cy + R * Math.sin(r1);
       const x2 = cx + R * Math.cos(r2), y2 = cy + R * Math.sin(r2);
-      emptyArcs += `<path d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="var(--surface3)" stroke-width="${W}" stroke-linecap="round" fill="none" opacity="0.6"/>`;
+      emptyArcs += `<path d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="var(--surface3)" stroke-width="${W}" stroke-linecap="butt" fill="none" opacity="0.55"/>`;
     }
     svg.innerHTML = `<g id="seroRotator" transform="rotate(${ringRotation.toFixed(2)} 170 170)">${emptyArcs}</g>`;
 
@@ -582,24 +592,22 @@ function renderSpendingSection() {
 
   if (N === 1) {
     const c = activeCats[0];
-    const a1 = 12, a2 = 348;
+    const a1 = -179, a2 = 179;
     const r1 = (a1 * Math.PI) / 180, r2 = (a2 * Math.PI) / 180;
     const x1 = cx + R * Math.cos(r1), y1 = cy + R * Math.sin(r1);
     const x2 = cx + R * Math.cos(r2), y2 = cy + R * Math.sin(r2);
-    pathsHtml += `<path class="sero-arc-path active" data-scat="${c.cat.id}" d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 1 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="${c.cat.color}" stroke-width="${W + 6}" stroke-linecap="round" fill="none"/>`;
-    iconsHtml += `<g class="sero-arc-icon-g" transform="translate(${cx}, ${cy - R}) rotate(90)" style="fill:none;stroke:#ffffff;color:#ffffff">
-      <use href="#i-${c.cat.icon}" x="-9" y="-9" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>`;
+    pathsHtml += `<path class="sero-arc-path active" data-scat="${c.cat.id}" d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 1 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="${c.cat.color}" stroke-width="${W + 8}" stroke-linecap="butt" fill="none"/>`;
+    iconsHtml += `<g class="sero-arc-icon-g" transform="translate(${cx + R}, ${cy}) rotate(90)"><use href="#i-${c.cat.icon}" x="-9" y="-9" width="18" height="18"/></g>`;
     activeSlicesData.push({ cat: c.cat, amount: c.amount, startA: a1, endA: a2, midA: 0 });
   } else {
-    const gapAngle = Math.max(14, Math.min(24, 360 / (N * 2.2)));
-    const totalGap = N * gapAngle;
-    const usableAngle = Math.max(120, 360 - totalGap);
+    const gapAngle = 2.6;
+    const usableAngle = 360 - N * gapAngle;
+    const rawSpans = activeCats.map(it => Math.max(7, (it.amount / total) * usableAngle));
+    const k = usableAngle / rawSpans.reduce((s, x) => s + x, 0);
 
     let curAngle = gapAngle / 2;
-    activeCats.forEach(item => {
-      const frac = item.amount / total;
-      const span = Math.max(8, frac * usableAngle);
+    activeCats.forEach((item, i) => {
+      const span = rawSpans[i] * k;
       const startA = curAngle;
       const endA = startA + span;
       const midA = (startA + endA) / 2;
@@ -610,13 +618,13 @@ function renderSpendingSection() {
       const largeArc = span > 180 ? 1 : 0;
       const isSel = item.cat.id === selCat.cat.id;
 
-      pathsHtml += `<path class="sero-arc-path ${isSel ? 'active' : ''}" data-scat="${item.cat.id}" d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="${item.cat.color}" stroke-width="${isSel ? W + 6 : W}" stroke-linecap="round" fill="none"/>`;
+      pathsHtml += `<path class="sero-arc-path ${isSel ? 'active' : ''}" data-scat="${item.cat.id}" d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="${item.cat.color}" stroke-width="${isSel ? W + 8 : W}" stroke-linecap="butt" fill="none"/>`;
 
-      const ix = cx + R * Math.cos(rm);
-      const iy = cy + R * Math.sin(rm);
-      iconsHtml += `<g class="sero-arc-icon-g" transform="translate(${ix.toFixed(2)}, ${iy.toFixed(2)}) rotate(90)" style="fill:none;stroke:#ffffff;color:#ffffff">
-        <use href="#i-${item.cat.icon}" x="-9" y="-9" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      </g>`;
+      if (span >= 15) {
+        const ix = cx + R * Math.cos(rm);
+        const iy = cy + R * Math.sin(rm);
+        iconsHtml += `<g class="sero-arc-icon-g" transform="translate(${ix.toFixed(2)}, ${iy.toFixed(2)}) rotate(90)"><use href="#i-${item.cat.icon}" x="-9" y="-9" width="18" height="18"/></g>`;
+      }
 
       activeSlicesData.push({ cat: item.cat, amount: item.amount, startA, endA, midA });
       curAngle = endA + gapAngle;
